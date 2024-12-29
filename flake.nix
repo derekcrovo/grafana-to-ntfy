@@ -13,8 +13,9 @@
   };
 
   outputs = inputs @ {
-    flake-parts,
     self,
+    flake-parts,
+    fenix,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -30,11 +31,14 @@
         formatter = pkgs.alejandra;
 
         packages.default = let
-          craneLib =
-            inputs.crane.lib.${system}.overrideToolchain
-            inputs.fenix.packages.${system}.minimal.toolchain;
+          craneLib = inputs.crane.mkLib pkgs;
         in
           craneLib.buildPackage {
+            buildInputs = with pkgs; [
+              fenix.packages.${system}.minimal.toolchain
+              pkg-config
+              openssl
+            ];
             src = ./.;
           };
 
